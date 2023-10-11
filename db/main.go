@@ -6,6 +6,7 @@ import (
 	"strings"
 	. "github.com/davixiao/go-db/db/resp"
 	. "github.com/davixiao/go-db/db/handlers"
+	. "github.com/davixiao/go-db/db/aof"
 )
 
 func main() {
@@ -17,6 +18,26 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
+	aof, err := NewAof("database.aof")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer aof.Close()
+
+	aof.Read(func(value Value) {
+		command := strings.ToUpper(value.Array[0].Bulk)
+		args := value.Array[1:]
+
+		handler, ok := Handlers[command]
+		if !ok {
+			fmt.Println("Invalid command: ", command)
+			return
+		}
+
+		handler(args)
+	})
 
 	// Listen for connections
 	conn, err := l.Accept()
@@ -55,6 +76,10 @@ func main() {
 			fmt.Println("Invalid command: ", command)
 			writer.Write(Value{Type: "string", Str: ""})
 			continue
+		}
+
+		if command == "SET" || command == "HSET" {
+			aof.Write(value)
 		}
 
 		result := handler(args)
