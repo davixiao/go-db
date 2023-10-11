@@ -36,18 +36,6 @@ func (r *RESP) readLine() (line []byte, n int, err error) {
 	return line[:len(line)-2], n, nil
 }
 
-func (r *RESP) readInteger() (x int, n int, err error) {
-	line, n, err := r.readLine()
-	if err != nil {
-		return 0, 0, err
-	}
-	i64, err := strconv.ParseInt(string(line), 10, 64)
-	if err != nil {
-		return 0, n, err
-	}
-	return int(i64), n, nil
-}
-
 func (r *RESP) Read() (Value, error) {
 	Type, err := r.reader.ReadByte()
 	if err != nil {
@@ -103,4 +91,16 @@ func (r *RESP) readBulk() (Value, error) {
 	r.readLine()
 
 	return v, nil
+}
+
+func (r *RESP) readInteger() (x int, n int, err error) {
+	line, n, err := r.readLine()
+	if err != nil {
+		return 0, 0, err
+	}
+	i64, err := strconv.ParseInt(string(line), 10, 64)
+	if err != nil {
+		return 0, n, err
+	}
+	return int(i64), n, nil
 }

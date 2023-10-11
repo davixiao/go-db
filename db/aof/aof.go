@@ -9,8 +9,7 @@ import (
 	. "github.com/davixiao/go-db/db/resp"
 )
 
-
-
+// append only file
 type Aof struct {
 	file *os.File
 	rd *bufio.Reader
@@ -28,15 +27,12 @@ func NewAof(path string) (*Aof, error) {
 		rd:   bufio.NewReader(f),
 	}
 
-	// Start a goroutine to sync AOF to disk every 1 second
+	// In order to be predictable, we flush to disk each second
 	go func() {
 		for {
 			aof.mu.Lock()
-
 			aof.file.Sync()
-
 			aof.mu.Unlock()
-
 			time.Sleep(time.Second)
 		}
 	}()
@@ -51,6 +47,7 @@ func (aof *Aof) Close() error {
 	return aof.file.Close()
 }
 
+// Write a RESP value to aof
 func (aof *Aof) Write(value Value) error {
 	aof.mu.Lock()
 	defer aof.mu.Unlock()
@@ -63,6 +60,7 @@ func (aof *Aof) Write(value Value) error {
 	return nil
 }
 
+// Read a RESP value from aof
 func (aof *Aof) Read(fn func(value Value)) error {
 	aof.mu.Lock()
 	defer aof.mu.Unlock()

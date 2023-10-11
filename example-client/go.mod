@@ -1,4 +1,4 @@
-module github.com/go-db/client
+module github.com/go-db/example-client
 
 go 1.20
 
