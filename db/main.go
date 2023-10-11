@@ -19,6 +19,7 @@ func main() {
 		return
 	}
 
+	// Create the aof if it does not exist
 	aof, err := NewAof("database.aof")
 	if err != nil {
 		fmt.Println(err)
@@ -26,6 +27,7 @@ func main() {
 	}
 	defer aof.Close()
 
+	// load stored values in aof into memory store
 	aof.Read(func(value Value) {
 		command := strings.ToUpper(value.Array[0].Bulk)
 		args := value.Array[1:]
@@ -48,6 +50,7 @@ func main() {
 
 	defer conn.Close()
 
+	// process RESP commands
 	for {
 		resp := NewRESP(conn)
 		value, err := resp.Read()
@@ -78,6 +81,7 @@ func main() {
 			continue
 		}
 
+		// currently only support SET and HSET to mutate data
 		if command == "SET" || command == "HSET" {
 			aof.Write(value)
 		}

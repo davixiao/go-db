@@ -17,6 +17,7 @@ func NewRESP(rd io.Reader) *RESP {
 	}
 }
 
+// readLine from a given command
 // example: "$5\r\n
 //			Ahmed\r\n"
 // two lines, we read each line one at a time.
